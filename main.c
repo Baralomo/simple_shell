@@ -1,48 +1,58 @@
 #include "shell.h"
+
 /**
- * main -starting point
+ * main - Entry point for the shell program.
  *
- * Return: 0 if Success
+ * Return: 0 on success, or exit status on error.
  */
 int main(void)
-{	char *userinput = NULL;
-	ssize_t n = 0;
+{
+	char *userinput = NULL;
 	size_t nline = 0;
-	pid_t process_pid;
-	int inter_mode = isatty(STDIN_FILENO);
+	ssize_t n;
+	int interactive_mode = isatty(STDIN_FILENO);
 
-	if (!inter_mode)
-	{	n = getline(&userinput, &nline, stdin);
-		if (_strcmp(userinput, "exit") == 0)
-			;
-		else if (_strcmp(userinput, "env") == 0)
-			_print_env();
-		else if (call_fork(userinput, n) == 1)
-			_exec_cmd(userinput, n); }
-	while (inter_mode)
+	while (1)
 	{
-		if (n != -1)
-		{	write(STDOUT_FILENO, "#cisfun$ ", 10);
-			n = getline(&userinput, &nline, stdin); }
-		if (_strcmp(userinput, "exit") == 0)
-			break;
+		if (interactive_mode)
+		{
+			write(STDOUT_FILENO, "#cisfun$ ", 9);
+		}
+
+		n = getline(&userinput, &nline, stdin);
+
 		if (n == -1)
 		{
 			if (feof(stdin))
-			{	write(STDOUT_FILENO, "\n", 1);
-				break; }
-			break; }
-		else if (_strcmp(userinput, "\n") == 0)
-		;
-		else if (_strcmp(userinput, "env") == 0)
+			{
+				if (interactive_mode)
+				{
+					write(STDOUT_FILENO, "\n", 1);
+				}
+				break;
+			}
+			perror("getline");
+			exit(EXIT_FAILURE);
+		}
+
+		if (_strcmp(userinput, "exit\n") == 0)
+		{
+			free(userinput);
+			exit(EXIT_SUCCESS);
+		}
+		else if (_strcmp(userinput, "env\n") == 0)
+		{
 			_print_env();
-		else if (call_fork(userinput, n) == 1)
-		{	process_pid = fork();
-			if (process_pid == -1)
-				perror("fork");
-			else if (process_pid == 0)
+		}
+		else
+		{
+			if (call_fork(userinput, n) == 1)
+			{
 				_exec_cmd(userinput, n);
-			else
-				wait(NULL); } }
-		free(userinput);
-		return (0); }
+			}
+		}
+	}
+
+	free(userinput);
+	return (0);
+}
