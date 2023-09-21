@@ -1,4 +1,5 @@
-# simple_shell work
+#C - Simple Shell
+Executed by:
+	Ibtissam BOUTAYEB
+	Hamza ABOUABID
 
-
-tHIS IS A PROJECT IN THE alx programme of software engineering
